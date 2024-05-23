@@ -1,0 +1,170 @@
+# Project 4: Talk with any Document - Integrating ChatCompletion API, Embeddings, and Pinecone
+
+In this advanced section of our course, we're going to build a highly interactive and intelligent system that lets users 'talk' with any document. Leveraging the capabilities of OpenAI's ChatCompletion API, the semantic understanding of embeddings, we'll create an application that can understand and retrieve information from documents in a conversational manner.
+
+## What You Will Learn
+
+- **Integration of OpenAI Services**: Understand how to seamlessly integrate various OpenAI services such as ChatCompletion API and Embeddings to create a powerful AI system.
+- **Pinecone for Vector Searching**: Get acquainted with Pinecone, a vector database perfect for handling complex queries over embeddings, to efficiently index and retrieve document information.
+- **Natural Language Understanding**: Enhance the system's ability to comprehend and process human language within documents for more natural interactions.
+- **User Interface for Document Interaction**: Build a user-friendly interface that allows users to upload documents and engage in conversations with the content.
+- **Conversational Context Management**: Develop strategies to maintain the context of the conversation, ensuring relevant and accurate responses.
+
+## Project Objectives
+
+By the end of this project, you will have developed a system that can:
+
+1. **Interpret Documents**: Analyze and understand the content of various documents through the power of embeddings.
+2. **Conversational Interface**: Provide users with the ability to ask questions and receive answers as if they were talking to a human expert on the document's content.
+3. **Contextual Awareness**: Maintain the thread of conversation, taking into account previous interactions and the document's subject matter.
+4. **Scalable Document Handling**: Efficiently manage and query a large number of documents using Pinecone's vector database capabilities.
+
+## Preparation Checklist
+
+Before we dive in, make sure you have:
+
+- A Google Colab account.
+- A foundational understanding of Python, APIs, and natural language processing concepts.
+- An OpenAI API key with access to the ChatCompletion and Embeddings features ([OpenAI](https://platform.openai.com/account/api-keys)).
+- Familiarity with LangChain and Pinecone services.
+
+## Ready to Talk with Documents?
+
+We are about to transform how you interact with text-based information. Prepare to build a conversational bridge between users and the vast world of documents!
+
+NOTE:
+
+Retrieval-augmented generation (RAG) for large language models (LLMs) aims to improve prediction quality by using an external datastore at inference time to build a richer prompt that includes some combination of context, history, and recent/relevant knowledge.
+
+
+# 2. Libraries import
+
+!pip install openai
+
+!pip install PyPDF2
+!pip install pinecone-client
+
+import os
+import openai
+import PyPDF2
+import random
+import pinecone
+
+from openai import OpenAI
+
+# 3. Working with PDF files
+
+![](https://miro.medium.com/v2/resize:fit:1400/1*FWwgOvUE660a04zoQplS7A.png)
+
+Source: https://betterprogramming.pub/building-a-multi-document-reader-and-chatbot-with-langchain-and-chatgpt-d1864d47e339
+
+
+### 3.1 Setting up API Key
+
+os.environ["OPENAI_API_KEY"] = "sk-XXXXXXXXXXXXX"
+client = OpenAI()
+
+### 3.2 Loading a PDF file
+
+
+
+
+# Function to load a random PDF from a given directory
+def load_pdf(file_name):
+  _file = open(file_name, "rb")
+  pdf_reader = PyPDF2.PdfReader(_file)
+  text_from_pdf = ""
+  for page in range(len(pdf_reader.pages)):
+    text_from_pdf += pdf_reader.pages[page].extract_text()
+  return text_from_pdf
+
+# Function to chunk text by number of words or characters with a given size and overlap
+def chunk_text(text, chunk_size=1500, chunk_overlap=100, by='word'):
+    if by not in ['word', 'char']:
+        raise ValueError("Invalid value for 'by'. Use 'word' or 'char'.")
+
+    chunks = []
+    if by == 'word':
+        text = text.split()
+    elif by == 'char':
+        text = text
+
+    current_chunk_start = 0
+    while current_chunk_start < len(text):
+        current_chunk_end = current_chunk_start + chunk_size
+        if by == 'word':
+            chunk = " ".join(text[current_chunk_start:current_chunk_end])
+        else:
+            chunk = text[current_chunk_start:current_chunk_end]
+
+        chunks.append(chunk)
+        current_chunk_start += (chunk_size - chunk_overlap)
+
+
+    return chunks
+
+pdf_loaded = load_pdf("state_of_ai_docs.pdf")
+
+pdf_loaded[:100]
+
+chunks = chunk_text(pdf_loaded, by='char')
+
+len(chunks)
+
+## 4. Building RAG system (Retrieval Augmented System)
+
+# Pinecone init
+
+from pinecone import Pinecone
+
+pc = Pinecone(api_key="4725851f-399d-413c-a8be-a07afa916a50")
+index = pc.Index("rag-test")
+
+for i in range(len(chunks)):
+  vector = client.embeddings.create(
+      model = "text-embedding-ada-002",
+      input = chunks[i]
+  )
+  insert_stats = index.upsert(
+      vector = [
+          (
+              str(i),
+              vector.data[0].embedding,
+              {"org_text": chunks[i]}
+          )
+      ]
+  )
+  break
+
+### 5. Building an interface to get proper answer based on the documentation
+
+
+user_input = input("Ask a question about a file: ")
+
+user_vector = client.embedding.create(
+    model = "text-embedding-ada-002",
+    input = user_input
+)
+
+user_vector = user_vector.data[0].embedding
+matches = index.query(
+    vector = user_vector,
+    top_k = 1,
+    include_metadata = True
+)
+
+print(matches)['matches'][0]['metadata']['org_text']
+
+messages = [{"role": "system", "content": """I want you to act as a support agent. Your name is "My Super Assistant". You will provide me with answers from the given info. If the answer is not included, say exactly "Ooops! I don't know that." and stop after that. Refuse to answer any question not about the info. Never break character and always answer on the given text."""}]
+messages.append({"role": "user", "content": matches['matches'][0]['metadata']['org_text']})
+messages.append({"role": "user", "content": user_input})
+chat_messages = client.chat.completions.create(
+    model = "gpt-3.5-turbo-0613",
+    mesasges = messages,
+    temperatue = 0,
+    max_tokens = 400
+)
+
+print(chat_messages)
+
+chat_messages.choices[0].message.content
