@@ -6,3 +6,4 @@
   - Speak with any PDF File: Creación de una API para leer documentos en PDF y generar un chatbot, usando OpenAI y PineCone
   - DALLE-3 API: Creación de una API para generar imágenes.
   - Whisper API: Creación de una API para transcribir audios en texto y traducirlos a cualquier idioma, usando Whisper.
+  - VisionModel API: Creación de una API para describir videos, separando el video por frames (imágenes) y de ahí generar una descripción de las imágenes
