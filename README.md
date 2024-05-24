@@ -8,6 +8,6 @@
   - Whisper API: Creación de una API para transcribir audios en texto y traducirlos a cualquier idioma, usando Whisper.
   - VisionModel API: Creación de una API para describir videos, separando el video por frames (imágenes) y de ahí generar una descripción de las imágenes
 
-##Consultas:
+## Consultas:
   - https://platform.openai.com/docs/guides/text-to-speech
   - https://stackoverflow.com/questions/201479/what-is-base-64-encoding-used-for
