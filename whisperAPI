@@ -1,0 +1,80 @@
+# Project 6: Automatic Voice Message Translation System
+
+In this innovative project, we're going to build a system that bridges language barriers: an automatic voice message translation system. Utilizing OpenAI's Whisper API for state-of-the-art speech-to-text capabilities and the ChatCompletion API for accurate text translation, we will create an end-to-end solution that can translate any voice message into a chosen language.
+
+## What You Will Learn
+
+- **Whisper API for Speech Recognition**: Master the use of OpenAI's Whisper API to convert speech from voice messages into text.
+- **ChatCompletion API for Translation**: Learn how to implement the ChatCompletion API to translate the transcribed text into the desired language.
+- **Audio File Handling**: Develop skills for processing audio files in various formats within the Google Colab environment.
+
+## Preparation Checklist
+
+Before we start, make sure you have the following:
+
+- An active Google Colab account.
+- Basic to intermediate knowledge of Python programming.
+- Familiarity with handling APIs and audio data.
+- Access to OpenAI API keys with permissions to use Whisper and ChatCompletion APIs ([OpenAI](https://platform.openai.com/account/api-keys)).
+
+## Time to Break Down Language Barriers
+
+Get ready to dive into the world of automatic translation. By the end of this project, you will be capable of turning voice messages from any language into text and then into another language of your choice, all within moments!
+
+
+
+# 2. Libraries import
+
+!pip install openai
+
+import os
+import openai
+
+from openai import OpenAI
+
+# 3. Sending a first request to OpenAI API
+
+
+### 3.1 Setting up API Key
+
+os.environ["OPENAI_API_KEY"] = "sk-XXXXXXXXXXXXX"
+client = OpenAI()
+
+# 4. Processing Audio files with Whisper
+
+audio_file = open("audio_file_whisper.mp3", "rb")
+transcription = client.audio.transcriptions.create(
+    model = "whisper-1",
+    file = audio_file,
+    response_format = "vtt"
+)
+
+print(transcription)
+
+## Audio transcription
+
+audio_file = open("audio_file_whisper.mp3", "rb")
+transcription = client.audio.transcriptions.create(
+    model = "whisper-1",
+    file = audio-file,
+    response_formar = "vtt"
+)
+
+transcription.text
+
+## Translating to any language using ChatGPT and Whisper
+
+
+
+target_language = "serbian"
+messages = [{"role": "system", "content": """I want you to act as an algorithm for translation to language {}. System will provide you with a text, and your only task is to translate it to {}. Never break character.""".format(target_language, target_language)}]
+messages.append({ "role": "user","content": transcription.text })
+
+translation_res = client.chat.completions.create(
+    model = "gpt-3.5-turbo-0613",
+    messages = messages,
+    max_tokens = 2000,
+    temperature = 0.9
+)
+
+translation_res.choices[0].messages.content
