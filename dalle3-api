@@ -1,0 +1,102 @@
+# Project 5: Generating and Working with Images | DALL-E API
+
+Prepare to explore the fascinating intersection of art and AI in this project, where we will use OpenAI's DALL-E API to generate and work with images. DALL-E is a cutting-edge AI system that can create realistic images and art from a description in natural language. In this section, we'll dive into the creative potential of DALL-E, learning to harness its capabilities to generate visuals that are not only captivating but also tailored to specific prompts.
+
+## What You Will Learn
+
+- **DALL-E API Basics**: Discover the capabilities and limitations of the DALL-E API for image generation and modification.
+- **Prompt Crafting**: Develop the skill of writing effective prompts to guide DALL-E in producing the desired images.
+- **Image Generation**: Learn how to generate images from scratch using text descriptions, exploring the nuances of translating words into visuals.
+
+
+## Getting Started
+
+Before we jump in, ensure you have:
+
+- A Google Colab account.
+- Basic knowledge of Python and REST APIs.
+- An OpenAI API key with access to the DALL-E service ([OpenAI](https://platform.openai.com/account/api-keys)).
+
+## Embarking on a Visual Journey
+
+Are you ready to push the boundaries of creativity and technology? Let's begin our journey into the world of AI-powered art with the DALL-E API!
+
+
+
+# 2. Libraries import
+
+!pip install openai
+
+import os
+import openai
+
+from openai import OpenAI
+
+# 3. Sending a first request to OpenAI API
+
+
+### 3.1 Setting up API Key
+
+os.environ["OPENAI_API_KEY"] = "sk-XXXXXXXXXXXXX"
+client = OpenAI()
+
+# 4. Generating images with DALLE
+
+
+
+import matplotlib.pyplot as plt
+from PIL import Image
+import requests
+from io import BytesIO
+
+# Function to display image from a given URL
+def show_image_from_url(url):
+    response = requests.get(url)                # Send a GET request to the image URL
+    img = Image.open(BytesIO(response.content)) # Open the image from the bytes in the response
+    plt.imshow(img)                             # Use Matplotlib to display the image
+    plt.axis('off')                             # Hide the axis to only show the image
+    plt.show()
+
+
+
+## Generating images
+
+# Saving image from the original prompt
+def save_image_from_url(url, file_path):
+    response = requests.get(url)
+    if response.status_code == 200:  # Check if the request was successful
+        with open(file_path, 'wb') as f:  # Open a file in binary write mode
+            f.write(response.content)  # Write the content of the response to the file
+        print(f"Image saved at {file_path}")
+    else:
+        print(f"Error: Unable to retrieve image. Status code: {response.status_code}")
+
+response = client.images.generate(
+    prompt = "A vaporwave 80s based city",
+    size = "512x512",
+    n=1
+)
+
+image_url = response.data[0].url
+
+show_image_from_url(url=image_url)
+
+
+
+## Editing images
+
+If this website is online, use this one to create masks: https://ai-image-editor.netlify.app/
+
+If offline, you can create masks using photoshop
+
+mask = Image.open("mask.png")
+resized_mask = mask.resize((512,512), Image.ANTIALIAS)
+resized_mask.save("resized_mask.png")
+
+res = client.images.edit(
+    image = open("test_img.jpg","rb"),
+    mask = open("mask.png", "rb"),
+    prompt = "Vaporwave, synthwave style duck",
+    n = 2,
+    size = "512x512"
+)
