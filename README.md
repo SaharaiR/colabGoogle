@@ -9,5 +9,6 @@
   - VisionModel API: Creación de una API para describir videos, separando el video por frames (imágenes) y de ahí generar una descripción de las imágenes
 
 ## Consultas:
+  - https://betterprogramming.pub/building-a-multi-document-reader-and-chatbot-with-langchain-and-chatgpt-d1864d47e339
   - https://platform.openai.com/docs/guides/text-to-speech
   - https://stackoverflow.com/questions/201479/what-is-base-64-encoding-used-for
