@@ -1,0 +1,143 @@
+# Project 7: Working with images using GPT-4 Vision model
+
+
+## What You Will Learn
+
+- **GPT-4 Vision model**: Discover the vision capabilities of GPT-4 model and how to build computer vision applications with it.
+
+
+## Getting Started
+
+Before we jump in, ensure you have:
+
+- A Google Colab account.
+- Basic knowledge of Python and REST APIs.
+- An OpenAI API key with access to the DALL-E service ([OpenAI](https://platform.openai.com/account/api-keys)).
+
+## Embarking on a Visual Journey
+
+Are you ready to create new AI application using GPT Vision? Let's begin our journey into the Computer Vision using GPT.
+
+
+
+# 2. Libraries import
+
+!pip install openai
+
+import os
+import openai
+import base64
+import requests
+
+from openai import OpenAI
+
+# 3. Sending a first request to OpenAI API
+
+
+### 3.1 Setting up API Key
+
+os.environ["OPENAI_API_KEY"] = "sk-XXXXXXXXXXXXX"
+client = OpenAI()
+
+# 4. Classifing and describing images
+
+
+
+def encode_image(image_path):
+  with open(image_path, "rb") as f:
+    return base64.b64encode(f.read()).decode("utf-8")
+
+base64_image = encode_image("test_img.jpg")
+
+base64_image
+
+res = client.chat.completions.create(
+    model = "gpt-4-vision-preview",
+    messages = [
+        (
+          {
+            "role": "user",
+            "content": [
+                { "type": "text", "content": "What's happening in the image?" },
+                {
+                    "type": "image_url",
+                    "image_url": f"data: image/jpeg;base64, { base64_image }"
+                }
+            ]
+          }
+        )
+    ],
+    max_tokens = 300
+)
+
+print(res.choices[0].messages.content)
+
+
+
+## Text To Speech using TTS API
+
+speech_file_path = "speech.mp3"
+
+
+response = client.audio.speech.create(
+  model="tts-1",
+  voice="alloy",
+  input="Today is a wonderful day to build something people love!"
+)
+
+response.stream_to_file(speech_file_path)
+
+# PROJECT 7: Generating voiceover of an video
+
+from IPython.display import display, Image, Audio
+import os
+import cv2
+import base64
+import requests
+
+video = cv2.VideoCapture("experiment_video_desc.mp4")
+
+base64_frames = []
+while video.isOpened():
+  sucess, frame = video.read()
+  if not sucess:
+    break
+
+  _, buffer = cv2.imencode(".jpg", frame)
+  base64_frames.append(base64.b64encode(buffer).decode("utf-8"))
+
+video.release()
+print(len(base64_frames))
+
+MESSAGES = [
+    {
+        "role": "user",
+        "content": [
+            "These are the frames of a video. Create a short voice over on thes images. Include only narration"
+        ]
+    }
+]
+
+for i in range(10):
+  MESSAGES[0]["content"].append({ "image": base64_frames, "resize": 764 })
+
+MESSAGES
+
+res_final = client.chat.completions.create(
+    model = "gpt-4-vision-preview",
+    messages = MESSAGES,
+    max_tokens = 500
+)
+
+res_final.choices[0].message.content
+
+speech_video_file = "speeech_video.mp3"
+audio_res = client.audio.speech.create(
+    model = "tts-1",
+    voice = "echo",
+    input = res_final.choices[0].message.content
+)
+
+audio_res.stream_to_file(speech_video_file)
+
+Audio(speech_video_file)
