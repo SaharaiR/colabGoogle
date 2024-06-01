@@ -12,3 +12,5 @@
   - https://betterprogramming.pub/building-a-multi-document-reader-and-chatbot-with-langchain-and-chatgpt-d1864d47e339
   - https://platform.openai.com/docs/guides/text-to-speech
   - https://stackoverflow.com/questions/201479/what-is-base-64-encoding-used-for
+
+## Desarrollados en Jupyter Notebook de Google y Python.
